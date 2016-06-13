@@ -50,8 +50,8 @@ class Minimap {
             throw new Exception("Minimap width or height is an invalid value");
         }
 
-        $tile_height = (($this->_tile_height * $this->_height) / $this->_tile_height);
-        $tile_width = (($this->_tile_width * $this->_width) / $this->_tile_width);
+        $tile_height = ((100 / ($this->_tile_height * $this->_height)) * $this->_tile_height);
+        $tile_width = ((100 / ($this->_tile_width * $this->_width)) * $this->_tile_width);
 
         $html = '<div id="Minimap"><div class="container">';
         for ($y = 1; $y < ($this->_height + 1); $y++) {

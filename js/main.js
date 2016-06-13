@@ -4,19 +4,19 @@ function Minimap(minimap_elem) {
     var map_width = $(map_container).width();
 
     return {
-        bindZoom: function() {
+        bindZoom: function(zoom_amount) {
             $(minimap_elem).on("DOMMouseScroll mousewheel", function(e) {
                 if(e.originalEvent.wheelDelta > 0 || e.originalEvent.detail < 0) {
-                    map_height = map_height + 10;
-                    map_width = map_width + 10;
+                    map_height = map_height + zoom_amount;
+                    map_width = map_width + zoom_amount;
 
                     map_container.css({
                         height: map_height,
                         width: map_width
                     });
                 } else {
-                    map_height = map_height - 10;
-                    map_width = map_width - 10;
+                    map_height = map_height - zoom_amount;
+                    map_width = map_width - zoom_amount;
 
                     map_container.css({
                         height: map_height,
@@ -38,7 +38,7 @@ function Minimap(minimap_elem) {
                 mouse_y = e.screenY;
                 mouse_x = e.screenX;
 
-                container_top = $(map_container).position().top;
+                container_top = $(minimap_elem).position().top;
                 container_left = $(map_container).position().left;
             });
 
@@ -63,6 +63,6 @@ function Minimap(minimap_elem) {
 
 $(document).ready(function() {
     var main = Minimap($("#Minimap"));
-    main.bindZoom();
+    main.bindZoom(20);
     main.bindDrag();
 });

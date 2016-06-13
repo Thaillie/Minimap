@@ -12,14 +12,16 @@
             require_once '../minimap.lib.php';
 
             $minimap = new Minimap();
+            $minimap->setHeight(100);
+            $minimap->setWidth(100);
 
             $location1 = $minimap->addLocation(5, 5);
             $location1->setName("Lavender town");
             $location1->setTileName("town.png");
             $location1->setVisitable(true);
 
-            for ($y = 1; $y < 11; $y++) {
-                for ($x = 1; $x < 11; $x++) {
+            for ($y = 1; $y < 101; $y++) {
+                for ($x = 1; $x < 101; $x++) {
                     $minimap->addTile($y, $x);
                 }
             }
