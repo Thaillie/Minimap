@@ -1,0 +1,12 @@
+/* Testing visuals */
+#Minimap [class^="tile"]:nth-child(1n) {
+    background-color: red;
+}
+
+#Minimap [class^="tile"]:nth-child(2n + 1) {
+    background-color: green;
+}
+
+#Minimap [class^="tile"].location {
+    background-color: yellow !important;
+}

@@ -1,23 +1,107 @@
 <?php
 
-$minimap = new Minimap();
-
-$location1 = $minimap->addLocation();
-$location1->setName("Lavender town");
-$location1->setTileName("town");
-$location1->setVisitable(true);
-
-var_dump($minimap);
-
 class Minimap {
+    public $_tiles_url = '/';
+
     private $_locations = array();
+    private $_tiles = array();
 
-    function __construct() {
+    private $_height = 10;
+    private $_width = 10;
 
+    protected $_tile_height = 32;
+    protected $_tile_width = 32;
+
+    public function setHeight($height) { return $this->_height = (int)$height; }
+    public function setWidth($width) { return $this->_width = (int)$width; }
+
+    public function setTileHeight($height) { return $this->_tile_height = (int)$height; }
+    public function setTileWidth($width) { return $this->_tile_width = (int)$width; }
+
+    function __construct($tiles_url = '') {
+        $this->_tiles_url = !empty((string)$tiles_url) ? (string)$tiles_url : $this->_tiles_url;
     }
 
-    public function addLocation() {
-        return $this->_locations[] = new MinimapLocation();
+    public function addTile($y, $x, $tile_name = '') {
+        if (((int)$x > $this->_width || (int)$x <= 0) || ((int)$y > $this->_height || (int)$y <= 0)) {
+            throw new Exception("MinimapTile out of bounds.");
+        }
+
+        $this->_tiles[(int)$y][(int)$x] = new MinimapTile((int)$y, (int)$x);
+        $this->_tiles[(int)$y][(int)$x]->setTileName($tile_name);
+
+        return $this->_tiles[(int)$y][(int)$x];
+    }
+
+    public function addLocation($y, $x) {
+        if (((int)$x > $this->_width || (int)$x <= 0) || ((int)$y > $this->_height || (int)$y <= 0)) {
+            throw new Exception("MinimapLocation out of bounds.");
+        }
+
+        return $this->_locations[(int)$y][(int)$x] = new MinimapLocation((int)$y, (int)$x);
+    }
+
+    public function generateMinimap() {
+        if ((empty($this->_tile_height) || empty($this->_tile_width)) || (($this->_tile_height <= 0) || ($this->_tile_width <= 0))) {
+            throw new Exception("Tile width or height is an invalid value");
+        }
+
+        if ((empty($this->_height) || empty($this->_width)) || (($this->_height <= 0) || ($this->_width <= 0))) {
+            throw new Exception("Minimap width or height is an invalid value");
+        }
+
+        $tile_height = (($this->_tile_height * $this->_height) / $this->_tile_height);
+        $tile_width = (($this->_tile_width * $this->_width) / $this->_tile_width);
+
+        $html = '<div id="Minimap"><div class="container">';
+        for ($y = 1; $y < ($this->_height + 1); $y++) {
+            $html .= '<div class="divider-' . $y . '" style="height: ' . $tile_height . '%;">';
+
+            for ($x = 1; $x < ($this->_width + 1); $x++) {
+                if (empty($this->_tiles[$y][$x])) {
+                    $html .= '<div class="tile-' . $y . '-' . $x . '" style="height: ' . $tile_height . '%; width: ' . $tile_width . '%;"></div>';
+                    continue;
+                }
+
+                if (!empty($this->_locations[$y][$x])) {
+                    $html .= $this->_locations[$y][$x]->getLocationHtml($tile_height, $tile_width);
+                    continue;
+                }
+
+                $html .= $this->_tiles[$y][$x]->getTileHtml($tile_height, $tile_width);
+            }
+
+            $html .= '</div>';
+        }
+
+        $html .= '</div></div>';
+
+        return $html;
+    }
+}
+
+class MinimapTile extends Minimap {
+    private $_tile_name = '';
+    private $_location = array();
+
+    public function setTileName($tile_name) { return $this->_tile_name = (string)$tile_name; }
+
+    function __construct($y, $x) {
+        if (empty((int)$y) || empty((int)$x)) {
+            throw new Exception("One or both coordinates missing");
+        }
+
+        $this->_location = array_merge($this->_location, array((int)$y, (int)$x));
+    }
+
+    public function getTileHtml($tile_height, $tile_width) {
+        $html = '
+        <div class="tile-' . $this->_location[0] . '-' . $this->_location[1] . '" style="height: 100%; width: ' . $tile_width . '%; ' . (!empty($this->_tile_name) ? 'background-image: url(' . $this->_tiles_url . $this->_tile_name . ')' : '') . '">
+            
+        </div>
+        ';
+
+        return $html;
     }
 }
 
@@ -35,7 +119,6 @@ class MinimapLocation extends Minimap {
     public function setTileName($tile_name) { return $this->_tile_name = (string)$tile_name; }
     public function setVisitable($bool) { return $this->_visitable = (bool)$bool; }
     public function setVisited($bool) { return $this->_visited = (bool)$bool; }
-    public function setLocation($x, $y) { return $this->_location = (array)array((int)$x, (int)$y); }
 
     public function addClass($class) { return $this->_classes[] = (string)$class; }
 
@@ -44,10 +127,32 @@ class MinimapLocation extends Minimap {
     public function getVisitable() { return (bool)$this->_visitable; }
     public function getVisited() { return (bool)$this->_visited; }
     public function getClasses() { return (array)$this->_classes; }
-    public function getLocation() { return $this->_location; }
 
-    function __construct() {
+    function __construct($y, $x) {
+        if (empty((int)$y) || empty((int)$x)) {
+            throw new Exception("One or both coordinates missing");
+        }
 
+        $this->_location = array_merge($this->_location, array((int)$y, (int)$x));
+    }
+
+    public function getLocationHtml($tile_height, $tile_width) {
+        $html = '
+        <div class="tile-' . $this->_location[0] . '-' . $this->_location[1] . ' location ' . $this->_generateClasses() . '" style="height: 100%; width: ' . $tile_width . '%; ' . (!empty($this->_tile_name) ? 'background-image: url(' . $this->_tiles_url . $this->_tile_name . ')' : '') . '">
+            
+        </div>
+        ';
+
+        return $html;
+    }
+
+    private function _generateClasses() {
+        if ($this->_visitable) { $this->addClass('visitable'); }
+        if ($this->_visited) { $this->addClass('visited'); }
+
+        $classes = implode(' ', $this->_classes);
+
+        return $classes;
     }
 }
 
