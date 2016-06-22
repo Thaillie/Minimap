@@ -1,8 +1,6 @@
 <?php
 
 class Minimap {
-    public $_tiles_url = '/';
-
     private $_locations = array();
     private $_tiles = array();
 
@@ -12,14 +10,18 @@ class Minimap {
     protected $_tile_height = 32;
     protected $_tile_width = 32;
 
+    private $_tiles_url = '/';
+
     public function setHeight($height) { return $this->_height = (int)$height; }
     public function setWidth($width) { return $this->_width = (int)$width; }
 
     public function setTileHeight($height) { return $this->_tile_height = (int)$height; }
     public function setTileWidth($width) { return $this->_tile_width = (int)$width; }
 
-    function __construct($tiles_url = '') {
-        $this->_tiles_url = !empty((string)$tiles_url) ? (string)$tiles_url : $this->_tiles_url;
+    public function setTilesUrl($tiles_url) { return $this->_tiles_url = (string)$tiles_url; }
+
+    function __construct() {
+
     }
 
     public function addTile($y, $x, $tile_name = '') {
@@ -64,11 +66,11 @@ class Minimap {
                 }
 
                 if (!empty($this->_locations[$y][$x])) {
-                    $html .= $this->_locations[$y][$x]->getLocationHtml($tile_height, $tile_width);
+                    $html .= $this->_locations[$y][$x]->getLocationHtml($this->_tiles_url, $tile_height, $tile_width);
                     continue;
                 }
 
-                $html .= $this->_tiles[$y][$x]->getTileHtml($tile_height, $tile_width);
+                $html .= $this->_tiles[$y][$x]->getTileHtml($this->_tiles_url, $tile_height, $tile_width);
             }
 
             $html .= '</div>';
@@ -94,9 +96,9 @@ class MinimapTile extends Minimap {
         $this->_location = array_merge($this->_location, array((int)$y, (int)$x));
     }
 
-    public function getTileHtml($tile_height, $tile_width) {
+    public function getTileHtml($tiles_url, $tile_height, $tile_width) {
         $html = '
-        <div class="tile-' . $this->_location[0] . '-' . $this->_location[1] . '" style="height: 100%; width: ' . $tile_width . '%; ' . (!empty($this->_tile_name) ? 'background-image: url(' . $this->_tiles_url . $this->_tile_name . ')' : '') . '">
+        <div class="tile-' . $this->_location[0] . '-' . $this->_location[1] . '" style="height: 100%; width: ' . $tile_width . '%; ' . (!empty($this->_tile_name) ? 'background-image: url(' . $tiles_url . $this->_tile_name . ')' : '') . '">
             
         </div>
         ';
@@ -136,9 +138,9 @@ class MinimapLocation extends Minimap {
         $this->_location = array_merge($this->_location, array((int)$y, (int)$x));
     }
 
-    public function getLocationHtml($tile_height, $tile_width) {
+    public function getLocationHtml($tiles_url, $tile_height, $tile_width) {
         $html = '
-        <div class="tile-' . $this->_location[0] . '-' . $this->_location[1] . ' location ' . $this->_generateClasses() . '" style="height: 100%; width: ' . $tile_width . '%; ' . (!empty($this->_tile_name) ? 'background-image: url(' . $this->_tiles_url . $this->_tile_name . ')' : '') . '">
+        <div class="tile-' . $this->_location[0] . '-' . $this->_location[1] . ' location ' . $this->_generateClasses() . '" style="height: 100%; width: ' . $tile_width . '%; ' . (!empty($this->_tile_name) ? 'background-image: url(' . $tiles_url . $this->_tile_name . ')' : '') . '">
             
         </div>
         ';

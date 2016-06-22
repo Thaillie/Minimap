@@ -19,5 +19,6 @@
 }
 
 #Minimap [class^="tile"] {
+    background-size: contain;
     float: left;
 }
