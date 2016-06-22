@@ -5,6 +5,7 @@ class Minimap {
 
     private $_locations = array();
     private $_tiles = array();
+    private $_css = '';
 
     private $_height = 10;
     private $_width = 10;
@@ -17,6 +18,8 @@ class Minimap {
 
     public function setTileHeight($height) { return $this->_tile_height = (int)$height; }
     public function setTileWidth($width) { return $this->_tile_width = (int)$width; }
+
+    public function getTileCss() { return $this->_css; }
 
     function __construct($tiles_url = '') {
         $this->_tiles_url = !empty((string)$tiles_url) ? (string)$tiles_url : $this->_tiles_url;
@@ -31,6 +34,16 @@ class Minimap {
         $this->_tiles[(int)$y][(int)$x]->setTileName($tile_name);
 
         return $this->_tiles[(int)$y][(int)$x];
+    }
+
+    public function addTileset($name, $tile_set, $tile_count, $columns) {
+        $i = 1;
+        $tiles_per_column = ($tile_count / $columns);
+        for ($col = 0; $col < $columns; $col++) {
+            for ($tile = 0; $tile < $tiles_per_column; $tile++) {
+                $this->_css .= '.' . preg_replace('/\W+/','',strtolower(strip_tags($name))) . '-' . $i++ . ' { background-image: url("' . $tile_set . '"); background-position: ' . ($this->_tile_height * $col) . 'px ' . ($this->_tile_width * $tile) . 'px; }' . PHP_EOL;
+            }
+        }
     }
 
     public function addLocation($y, $x) {
@@ -84,7 +97,13 @@ class MinimapTile extends Minimap {
     private $_tile_name = '';
     private $_location = array();
 
+    private $_classes = array();
+
     public function setTileName($tile_name) { return $this->_tile_name = (string)$tile_name; }
+
+    public function addClass($class) { return $this->_classes[] = (string)$class; }
+
+    public function getClasses() { return (array)$this->_classes; }
 
     function __construct($y, $x) {
         if (empty((int)$y) || empty((int)$x)) {
@@ -96,12 +115,18 @@ class MinimapTile extends Minimap {
 
     public function getTileHtml($tile_height, $tile_width) {
         $html = '
-        <div class="tile-' . $this->_location[0] . '-' . $this->_location[1] . '" style="height: 100%; width: ' . $tile_width . '%; ' . (!empty($this->_tile_name) ? 'background-image: url(' . $this->_tiles_url . $this->_tile_name . ')' : '') . '">
+        <div class="tile-' . $this->_location[0] . '-' . $this->_location[1] . ' ' . $this->_generateClasses() . '" style="height: 100%; width: ' . $tile_width . '%; ' . (!empty($this->_tile_name) ? 'background-image: url(' . $this->_tiles_url . $this->_tile_name . ')' : '') . '">
             
         </div>
         ';
 
         return $html;
+    }
+
+    private function _generateClasses() {
+        $classes = implode(' ', $this->_classes);
+
+        return $classes;
     }
 }
 
