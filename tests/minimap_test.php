@@ -2,7 +2,7 @@
 
 require_once '../minimap.lib.php';
 
-$xml = simplexml_load_file('test.tmx');
+$xml = simplexml_load_file('tile.tmx');
 
 $minimap = new Minimap();
 $minimap->setTilesUrl('/Minimap/tests/tiles/');
